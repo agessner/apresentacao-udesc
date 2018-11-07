@@ -1,7 +1,9 @@
 from django.urls import path
 
-from notas.views import NotaView
+from notas.views import NotaView, NotaListView
+
 
 urlpatterns = [
-    path('', NotaView.as_view()),
+    path('', NotaListView.as_view()),
+    path('<int:id>/', NotaView.as_view()),
 ]

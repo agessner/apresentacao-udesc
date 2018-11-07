@@ -1,7 +1,9 @@
 from django.urls import path
 
-from . import views
+from alunos.views import AlunoView, AlunosView
+
 
 urlpatterns = [
-    path('', views.post, name='post'),
+    path('', AlunosView.as_view()),
+    path('<int:id>/', AlunoView.as_view()),
 ]
