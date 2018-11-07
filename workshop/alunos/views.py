@@ -1,11 +1,18 @@
+import ujson
+from django import forms
 from django.http import HttpResponse
-from django.shortcuts import render
 
 from alunos.models import Aluno
 
 
 def post(request):
-    aluno = request.body
-    Aluno.save(**aluno)
+    form = AlunoForm(request.POST)
+    if form.is_valid():
+        novo_aluno = Aluno(**form.cleaned_data)
+        novo_aluno.save()
+        return HttpResponse(status=200, content=ujson.dumps(novo_aluno))
+    return HttpResponse(status=401)
 
-    return HttpResponse(status=200)
+
+class AlunoForm(forms.Form):
+    nome = forms.CharField()

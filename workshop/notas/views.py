@@ -1,23 +1,27 @@
+import ujson
+from django import forms
 from django.http import HttpResponse
-from django.shortcuts import render
 
-# Create your views here.
-from django.utils.decorators import method_decorator
 from django.views import View
-from django.views.decorators.csrf import csrf_exempt
 
 from notas.models import Nota
 
 
 class NotaView(View):
     def get(self, request):
-        print('shu')
         return HttpResponse(status=200)
 
-    method_decorator(csrf_exempt)
     def post(self, request):
-        print('shu2')
-        nota = request.body
-        Nota.save(**nota)
+        form = NotaForm(request.POST)
 
-        return HttpResponse(status=200)
+        if form.is_valid():
+            nova_nota = Nota(**form.cleaned_data)
+            nova_nota.save()
+            return HttpResponse(status=200, content=ujson.dumps(nova_nota))
+
+        return HttpResponse(status=401)
+
+
+class NotaForm(forms.Form):
+    aluno_id = forms.IntegerField()
+    valor = forms.DecimalField(decimal_places=2)
