@@ -32,10 +32,10 @@ class AlunosView(View):
 
 
 class AlunoView(View):
-    def get(self, request, id):
+    def get(self, request, aluno_id):
         alunos = get_object_or_404(
             Aluno,
-            id=id
+            id=aluno_id
         )
         return HttpResponse(status=200, content=ujson.dumps(alunos), content_type='application/json')
 
