@@ -1,12 +1,10 @@
 import ujson
+
 from django import forms
 from django.http import HttpResponse
-
-from alunos.models import Aluno
-from django.shortcuts import get_object_or_404
 from django.views import View
 
-from alunos.models import Nota
+from alunos.services import criar_aluno, obter_aluno, obter_alunos, obter_notas, criar_nota, excluir_nota
 
 
 class AlunoForm(forms.Form):
@@ -19,65 +17,33 @@ class NotaForm(forms.Form):
 
 class AlunosView(View):
     def post(self, request):
-        form = AlunoForm(request.POST)
-        if form.is_valid():
-            novo_aluno = Aluno(nome=form.cleaned_data['nome'])
-            novo_aluno.save()
-            return HttpResponse(status=200, content=ujson.dumps(novo_aluno), content_type='application/json')
-        return HttpResponse(status=422, content_type='application/json')
+        body = ujson.loads(request.body)
+        novo_aluno = criar_aluno(body['nome'])
+        return HttpResponse(status=200, content=ujson.dumps(novo_aluno), content_type='application/json')
 
     def get(self, request):
-        alunos = Aluno.objects.all()
+        alunos = obter_alunos()
         return HttpResponse(status=200, content=ujson.dumps(alunos), content_type='application/json')
 
 
 class AlunoView(View):
     def get(self, request, aluno_id):
-        alunos = get_object_or_404(
-            Aluno,
-            id=aluno_id
-        )
-        return HttpResponse(status=200, content=ujson.dumps(alunos), content_type='application/json')
+        aluno = obter_aluno(aluno_id)
+        return HttpResponse(status=200, content=ujson.dumps(aluno), content_type='application/json')
 
 
 class NotasView(View):
     def get(self, request, aluno_id):
-        notas = Nota.objects.filter(aluno_id=aluno_id)
+        notas = obter_notas(aluno_id)
         return HttpResponse(status=200, content=ujson.dumps(notas), content_type='application/json')
 
     def post(self, request, aluno_id):
-        form = NotaForm(request.POST)
-
-        if form.is_valid():
-            nova_nota = Nota(aluno_id=aluno_id, valor=form.cleaned_data['valor'])
-            nova_nota.save()
-
-            todas_as_notas = Nota.objects.filter(aluno_id=nova_nota.aluno_id)
-            somatorio = 0
-            for nota in todas_as_notas:
-                somatorio += nota.valor
-            media = somatorio / len(todas_as_notas)
-
-            nova_nota.aluno.media = media
-            nova_nota.aluno.save()
-
-            return HttpResponse(status=200, content=ujson.dumps(nova_nota), content_type='application/json')
-
-        return HttpResponse(status=422, content_type='application/json')
+        body = ujson.loads(request.body)
+        nota = criar_nota(aluno_id, body['valor'])
+        return HttpResponse(status=200, content=ujson.dumps(nota), content_type='application/json')
 
 
 class NotaView(View):
-    def delete(self, request, aluno_id, nota_id):
-        nota_deletada = Nota.objects.get(aluno_id=aluno_id, id=nota_id)
-        nota_deletada.delete()
-
-        todas_as_notas = Nota.objects.filter(aluno_id=nota_deletada.aluno_id)
-        somatorio = 0
-        for nota in todas_as_notas:
-            somatorio += nota.valor
-        media = somatorio / len(todas_as_notas)
-
-        nota_deletada.aluno.media = media
-        nota_deletada.aluno.save()
-
+    def delete(self, request, nota_id):
+        excluir_nota(nota_id)
         return HttpResponse(status=200, content_type='application/json')
