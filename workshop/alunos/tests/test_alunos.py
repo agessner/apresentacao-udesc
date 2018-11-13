@@ -1,5 +1,4 @@
-import ujson
-from decimal import Decimal
+import json as ujson
 
 import pytest
 
@@ -31,8 +30,8 @@ def test_obtem_aluno_por_id(client):
 @pytest.mark.urls('workshop.urls')
 def test_obtem_notas_de_um_aluno(client):
     aluno = criar_aluno('Marcão')
-    criar_nota(aluno.id, Decimal('7'))
-    criar_nota(aluno.id, Decimal('8'))
+    criar_nota(aluno.id, 7.0)
+    criar_nota(aluno.id, 8.0)
 
     response = client.get(f'/alunos/{aluno.id}/notas')
 
@@ -58,7 +57,7 @@ def test_gravar_nota_de_um_aluno(client):
 @pytest.mark.urls('workshop.urls')
 def test_exclui_nota_de_um_aluno(client):
     aluno = criar_aluno('Marcão')
-    nota = criar_nota(aluno.id, Decimal('8.0'))
+    nota = criar_nota(aluno.id, 8.0)
 
     response = client.delete(f'/alunos/notas/{nota.id}')
 
@@ -82,24 +81,24 @@ def test_obtem_todos_os_alunos(client):
 @pytest.mark.urls('workshop.urls')
 def test_atualiza_media_do_aluno_quando_adiciona_nova_nota(client):
     aluno = criar_aluno('Marcão')
-    criar_nota(aluno.id, Decimal('7.5'))
+    criar_nota(aluno.id, 7.5)
 
-    response = client.post(f'/alunos/{aluno.id}/notas', ujson.dumps({'valor': Decimal('9.8')}), content_type='application/json')
+    response = client.post(f'/alunos/{aluno.id}/notas', ujson.dumps({'valor': 9.8}), content_type='application/json')
 
     aluno_retornado = obter_aluno(aluno.id)
     assert 200 == response.status_code
-    assert Decimal('8.65') == aluno_retornado.media
+    assert 8.65 == aluno_retornado.media
 
 
 @pytest.mark.django_db
 @pytest.mark.urls('workshop.urls')
 def test_atualiza_media_do_aluno_quando_exclui_nota(client):
     aluno = criar_aluno('Marcão')
-    nota = criar_nota(aluno.id, Decimal('7.5'))
-    criar_nota(aluno.id, Decimal('9.8'))
+    nota = criar_nota(aluno.id, 7.5)
+    criar_nota(aluno.id, 9.8)
 
     response = client.delete(f'/alunos/notas/{nota.id}')
 
     aluno_retornado = obter_aluno(aluno.id)
     assert 200 == response.status_code
-    assert Decimal('9.8') == aluno_retornado.media
+    assert 9.8 == aluno_retornado.media

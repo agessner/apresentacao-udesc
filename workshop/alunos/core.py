@@ -1,6 +1,3 @@
-from decimal import Decimal
-
-
 def criar_aluno(inserir_aluno_no_bd, nome):
     validar_aluno(nome)
     return inserir_aluno_no_bd(nome)
@@ -44,7 +41,8 @@ def validar_aluno(nome):
 
 
 def validar_nota(nota):
-    nota = Decimal(str(nota))
+    if not isinstance(nota, float):
+        raise TypeError()
 
     if nota < 0:
         raise ValueError('Nota deve ser maior ou igual a zero')

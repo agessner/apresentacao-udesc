@@ -1,4 +1,4 @@
-import ujson
+import json as ujson
 
 from django.http import HttpResponse
 from django.views import View
